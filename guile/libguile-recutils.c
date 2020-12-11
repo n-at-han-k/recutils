@@ -351,8 +351,7 @@ void destroy_rset(void *rset)
   rec_rset_destroy((rec_rset_t)rset);
 }
 
-SCM_DEFINE(
-
+/* TODO ... */
 
 /************* Databases ************************/
 

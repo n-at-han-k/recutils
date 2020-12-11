@@ -1,3 +1,16 @@
+2020-12-11  Antoine Kalmbach  <ane@iki.fi>
+
+	* Makefile.am: Add BUILD_GUILE.
+	* configure.ac: Add Guile conditionals.
+	* guile/HACKING: Create.
+	* guile/Makefile.am: Create.
+	* guile/libguile-recutils.c: Create.
+	* guile/pre-inst-env.in: Create.
+	* guile/test-driver.scm: Create.
+	* guile/tests/fields.scm (recutils): Create.
+	* guile/tests/records.scm (recutils): Create.
+	* guile/recutils.scm: Create.
+
 2020-11-18  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* src/rec-parser.c (rec_parse_db): Fix error reporting.
