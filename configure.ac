@@ -193,6 +193,29 @@ fi
 AC_SUBST([CA68])
 AM_CONDITIONAL([BUILD_A68],[test -n "$CA68" && test "x$algol68_enabled" = "xyes"])
 
+AC_ARG_ENABLE([guile],
+              AS_HELP_STRING([--enable-guile],
+                             [Build with Guile support (default is NO)]),
+              [guile_enabled=$enableval], [guile_enabled=no])
+
+if test "x$guile_enabled" = "xyes"; then
+  GUILE_PKG([3.0 2.2])
+
+  GUILE_PROGS
+  GUILE_FLAGS
+
+  AC_PATH_PROG([GUILE_SNARF], [guile-snarf])
+  AC_SUBST([GUILE_SNARF])
+
+  PKG_CHECK_MODULES([GUILE], [guile-3.0])
+
+  GUILE_SITE_DIR
+
+  AC_CONFIG_FILES([guile/pre-inst-env], [chmod +x guile/pre-inst-env])
+fi
+
+AM_CONDITIONAL([BUILD_GUILE],[test "x$guile_enabled" = "xyes"])
+
 dnl Platform-based compilation options
 compile_w32_system=no
 case "${host}" in
@@ -228,7 +251,8 @@ AC_CONFIG_FILES(Makefile
                 torture/utils/config.sh
                 man/Makefile
                 etc/Makefile
-                algol68/Makefile)
+                algol68/Makefile
+                guile/Makefile)
 AC_OUTPUT
 
 dnl Report warnings

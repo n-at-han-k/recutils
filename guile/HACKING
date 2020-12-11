@@ -1,0 +1,14 @@
+* How to develop libguile-recutils
+
+If you use Emacs and Geiser (highly recommended), your best
+bet for interactive development is to start a REPL like this
+
+    ./pre-inst-env guile --listen
+
+and then `M-x connect-to-guile' and specify localhost. This way your Guile
+process has the correct load path for extensions set, since that cannot be
+easily customized.
+
+Local Variables:
+mode: outline
+End:

@@ -23,6 +23,10 @@ if BUILD_A68
    SUBDIRS += algol68
 endif
 
+if BUILD_GUILE
+   SUBDIRS += guile
+endif
+
 perf:
 	$(MAKE) -C torture/utils perf
 

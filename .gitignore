@@ -114,3 +114,9 @@ torture/utils/config.sh
 /doc/recutils-a4.tp
 /doc/recutils-a4.vr
 /doc/recutils-a4.vrs
+/guile/libguile-recutils.a
+/guile/libguile-recutils.x
+/guile/*.go
+/guile/pre-inst-env
+/guile/tests/*.log
+/guile/tests/*.trs
