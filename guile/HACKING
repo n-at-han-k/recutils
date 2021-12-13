@@ -1,13 +1,39 @@
 * How to develop libguile-recutils
 
 If you use Emacs and Geiser (highly recommended), your best
-bet for interactive development is to start a REPL like this
+bet for interactive development is to start a REPL over a socket like this
 
     ./pre-inst-env guile --listen
 
 and then `M-x connect-to-guile' and specify localhost. This way your Guile
 process has the correct load path for extensions set, since that cannot be
-easily customized.
+easily customized. If you do `M-x run-guile' the library will not be visible to
+Guile, unless...
+
+If you have installed recutils on your system with Guile modules already, you
+can let Guile load the libguile-recutils dynamic library from the system
+path. In this case you can just use `M-x run-guile'. But if you develop C
+extensions to libguile-recutils, be careful, since Guile by default will load
+the system one. Hence, if you are hacking on the C extensions, it is a good idea
+to use the pre-inst-env wrapper with a socket connection.
+
+* Tips on Scheme and C
+
+While we could write the bindings entirely in Scheme using the Guile dynamic
+FFI, we opt to write C because (a) it feels natural, as librec itself is in C,
+and adding more C to it doesn't feel out of place and (b) it is considerably
+easier than using FFI.
+
+That said, a good guideline is that write C if and only if it's necessary. This
+is often the case when you need to interact with the librec structs directly
+using librec API calls. Always try to solve the problem using Scheme first, and
+if you can't, then try in C.
+
+The C level calls are not exported from the module, if they are, they are
+shadowed by a top-level Guile function. This is so that the Scheme procedure so
+defined gets a docstring and a debuggable Scheme representation. In such cases
+the C defined procedure will have its name prefixed by a %, and the exported
+Scheme symbol wrapping the procedure will have it without the %. 
 
 Local Variables:
 mode: outline

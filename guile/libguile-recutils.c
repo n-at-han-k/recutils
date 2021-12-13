@@ -16,13 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include <rec.h>
 #include <libguile.h>
 
-
 /* Forward declarations. */
 void destroy_field(void *field);
+void destroy_comment(void *comment);
 
 /************************ Records *******************************/
 
@@ -48,26 +47,34 @@ SCM_DEFINE (scm_new_rec, "%make-empty-rec", 0, 0, 0, (),
   return record_to_scm(rec);
 }
 
-SCM_DEFINE (scm_get_record_field_ptrs, "%rec-field-ptrs", 1, 0, 0, (SCM ptr),
-            "Return all field pointers of the %rec, these are not pointers\n"
-            "to the original values.")
+SCM_DEFINE (scm_record_elems, "%rec-elem-ptrs", 1, 0, 0, (SCM ptr),
+            "Return all field or comments of the record.")
 {
   rec_record_t rec = (rec_record_t)scm_to_pointer(ptr);
 
   rec_mset_iterator_t iter;
   rec_mset_elem_t elem;
-  rec_field_t field;
+  void *data;
   SCM cons = scm_c_eval_string("'()");
+  SCM comment = scm_from_utf8_symbol("comment");
+  SCM field = scm_from_utf8_symbol("field");
 
   iter = rec_mset_iterator (rec_record_mset (rec));
 
-  while (rec_mset_iterator_next (&iter, MSET_ANY, (const void **) &field, &elem))
+  while (rec_mset_iterator_next (&iter, MSET_ANY, (const void **) &data, &elem))
     {
+      /* No finalizer. The record owns the fields. */
+      SCM ptr = scm_from_pointer(data, NULL);
+      /* We have to use cons cells because we can't make classes here */
       if (rec_mset_elem_type(elem) == MSET_FIELD)
         {
-          rec_field_t dup = rec_field_dup (field);
-          SCM ptr = scm_from_pointer(dup, destroy_field);
-          cons = scm_cons(ptr, cons);
+          cons = scm_cons(scm_cons(field, ptr), cons);
+        }
+      else
+        {
+          /* Just return the string of the comment, instead of the pointer */
+          SCM text = scm_from_utf8_string(data);
+          cons = scm_cons(scm_cons(comment, text), cons);
         }
     }
 
@@ -134,6 +141,17 @@ SCM_DEFINE (scm_rec_add_field_value_m, "%rec-add-field-value!", 3, 0, 0, (SCM pt
 
   field = rec_field_new (fname, str);
   rec_mset_append(rec_record_mset(record), MSET_FIELD, (void*) field, MSET_ANY);
+
+  return SCM_UNSPECIFIED;
+}
+
+SCM_DEFINE(scm_rec_add_comment, "%rec-add-comment", 2, 0, 0, (SCM ptr, SCM scm_comment),
+           "Add COMMENT to REC.")
+{
+  rec_record_t record = (rec_record_t)scm_to_pointer(ptr);
+  rec_comment_t comment = scm_to_utf8_string(scm_comment);
+
+  rec_mset_append(rec_record_mset(record), MSET_COMMENT, (void*) comment, MSET_ANY);
 
   return SCM_UNSPECIFIED;
 }

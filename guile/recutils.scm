@@ -22,6 +22,7 @@
   #:use-module (system foreign)
   #:use-module (ice-9 format)
   #:use-module (ice-9 exceptions)
+  #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
   #:use-module (oop goops)
@@ -30,23 +31,15 @@
             string->field field->string
             
             <rec>
-            rec-fields
+            elems
             rec->alist alist->rec string->rec rec->string
-            record->rec
+            record->rec rec->hash-table hash-table->rec
 
-            append append!))
+            append-to-rec append-to-rec!
 
+            <comment>
+            comment-text))
 
-;;; Forward declaration to keep the byte compiler happy.
-(define %field-to-string #f)
-(define %parse-field #f)
-(define %field-name #f)
-(define %field-value #f)
-(define new-field #f)
-(define %rec-field-ptrs #f)
-(define %rec->string #f)
-(define %string->rec #f)
-;;; Extension loading.
 
 ;; Load the recutils dynamic library.
 ;; When developing, we have a script (pre-inst-env)
@@ -86,7 +79,11 @@
          #:slot-set! (lambda (field value)
                        (set-field-value! (slot-ref field 'ptr) value))))
 
+;;;; Comments
+;;; Comments are just strings.
 
+(define-class <comment> ()
+  (text #:init-keyword #:text #:accessor comment-text))
 
 ;;;;; Conversion methods
 
@@ -102,57 +99,71 @@
 
 (define-class <rec> ()
   (ptr #:init-form (%make-empty-rec) #:init-keyword #:ptr)
-  (fields #:init-keyword #:fields #:init-value '()
-          #:allocation #:virtual
-          #:accessor rec-fields
-          #:slot-ref (lambda (r)
-                       (map (lambda (field)
+  (elems #:init-keyword #:elems #:init-value '()
+         #:allocation #:virtual
+         #:accessor elems
+         #:slot-ref (lambda (r)
+                      (map (match-lambda
+                             (('field . field)
                               (make <field> #:ptr field))
-                            (%rec-field-ptrs (slot-ref r 'ptr))))
-          #:slot-set! (lambda (r fields)
-                        #f)))
+                             (('comment . comment)
+                              (make <comment> #:text comment)))
+                           (%rec-elem-ptrs (slot-ref r 'ptr))))
+         #:slot-set! (lambda (r fields)
+                       #f)))
 
 ;;;; Methods on records
 
-(define-generic append)
+(define-generic append-to-rec)
 
-(define-method (append (rec <rec>) (name <string>) (value <string>))
+(define-method (append-to-rec (rec <rec>) (name <string>) (value <string>))
   "Append a new field consisting of NAME and VALUE to REC, returning
 a new record. "
-  (make <rec> #:ptr (%rec-add-field-value (slot-ref rec 'ptr) name value)))
+  (let ((new (make <rec>)))
+    (append-to-rec! new rec)
+    (append-to-rec! new name value)
+    new))
 
-(define-method (append (rec <rec>) (name <string>) (value <top>))
+(define-method (append-to-rec (rec <rec>) (name <string>) (value <top>))
   "Append a new field consisting of NAME and VALUE to REC, converting VALUE
 first to string using `object-to-string'. Returns a new record."
-  (append rec name (object->string value)))
+  (append-to-rec rec name (object->string value)))
 
-(define-method (append (rec <rec>) (second <rec>))
+(define-method (append-to-rec (rec <rec>) (second <rec>))
   "Append two records together, returning a new record."
   (make <rec> #:ptr (%rec-append-rec (slot-ref rec 'ptr)
                                      (slot-ref second 'ptr))))
 
-(define-generic append!)
+(define-method (append-to-rec (rec <rec>) (comment <comment>))
+  "Append COMMENT to REC."
+  (let ((new (make <rec>)))
+    (append-to-rec! new rec)
+    (append-to-rec! new comment)
+    new))
 
-(define-method (append! (rec <rec>) (second <rec>))
+(define-generic append-to-rec!)
+
+(define-method (append-to-rec! (rec <rec>) (second <rec>))
   "Append two records together, returning a new record."
   (%rec-append-rec! (slot-ref rec 'ptr)
                     (slot-ref second 'ptr)))
 
-(define-method (append! (rec <rec>) (name <string>) (value <string>))
-  "Like (append rec name value), but modifies rec destructively."
+(define-method (append-to-rec! (rec <rec>) (name <string>) (value <string>))
+  "Like (append-to-rec rec name value), but modifies rec destructively."
   (%rec-add-field-value! (slot-ref rec 'ptr) name value))
 
-(define-method (append! (rec <rec>) (name <string>) (value <top>))
-  "Like (append rec name value), but modifies rec destructively."
-  (append! rec name (object->string value)))
+(define-method (append-to-rec! (rec <rec>) (name <string>) (value <top>))
+  "Like (append-to-rec rec name value), but modifies rec destructively."
+  (append-to-rec! rec name (object->string value)))
 
-;;;; Record modification
-
-(define (rec-add-field-value rec name value)
-  "Add a field with NAME and VALUE to REC."
-  (%rec-add-field-value (slot-ref rec 'ptr) name value))
+(define-method (append-to-rec! (rec <rec>) (comment <comment>))
+  (%rec-add-comment (slot-ref rec 'ptr) (slot-ref comment 'text)))
 
 ;;;; Conversion functions
+;;; NOTE: Use destructive variants of `append-to-rec!' for maximum efficiency,
+;;; since while the API makes it easy to operate on records directly, there will
+;;; be lots of conversions going on. We don't want to allocate too much memory
+;;; in that case.
 
 (define (rec->string rec)
   "Print REC as a string."
@@ -174,10 +185,43 @@ first to string using `object-to-string'. Returns a new record."
   (fold
    (lambda (cell rec)
      (begin
-       (append! rec (car cell) (cdr cell))
+       (if (equal? 'comment (car cell))
+           (append-to-rec! rec (make <comment> #:text (cdr cell)))
+           (append-to-rec! rec (car cell) (cdr cell)))
        rec))
    (make <rec>)
    alist))
+
+(define (rec->hash-table rec)
+  "Convert REC into a hash table. If any given field has multiple values, the
+hash table value for that field will be converted into a list. Comments are
+skipped. If you convert this hash table into a record using `hash-table->rec',
+consider that it will most likely not have the same order as the original
+record, as such, hash tables should only be used for efficient lookup and the
+original record should be kept available elsewhere."
+  (let ((hash (make-hash-table)))
+    (for-each
+     (lambda (field)
+       (let* ((name (field-name field))
+              (value (field-value field))
+              (hash-value (hash-ref hash name)))
+         (hash-set! hash name
+                    (if (list? hash-value)
+                        (append hash-value value)
+                        (list value)))))
+     (slot-ref rec 'elems))
+    hash))
+
+(define (hash-table->rec hash)
+  "Convert hash-table HASH into a record. Do note that if the hash table was
+created using `rec->hash-table', due to the hashing function you are not likely
+going to get the original record."
+  (let ((rec (make <rec>)))
+    (hash-for-each
+     (lambda (k v)
+       (append-to-rec! rec k v))
+     hash)
+    rec))
 
 (define (record->rec record)
   "Convert RECORD, a Scheme record, to a recutils record."
@@ -191,8 +235,8 @@ first to string using `object-to-string'. Returns a new record."
             (loop (cdr fields)
                   (+ 1 idx)
                   (begin
-                    (append! rec name
-                             (struct-ref record idx))
+                    (append-to-rec! rec name
+                                    (struct-ref record idx))
                     rec))))
         rec)))
 
@@ -200,8 +244,6 @@ first to string using `object-to-string'. Returns a new record."
 ;;; Record sets
 
 ;;; Databases
-
-(define-class <db>)
 
 ;;; recutils.in ends here
 

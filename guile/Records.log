@@ -1,0 +1,162 @@
+%%%% Starting test Records
+Group begin: Records
+Test begin:
+  test-name: "constructor makes an empty record"
+  source-file: "tests/records.scm"
+  source-line: 12
+  source-form: (test-equal "constructor makes an empty record" 0 (length (rec->alist (make <rec>))))
+Test end:
+  result-kind: pass
+  actual-value: 0
+  expected-value: 0
+Test begin:
+  test-name: "rec->alist works"
+  source-file: "tests/records.scm"
+  source-line: 16
+  source-form: (test-equal "rec->alist works" (quote (("Foo" . "Bar"))) (rec->alist (append-to-rec (make <rec>) "Foo" "Bar")))
+Test end:
+  result-kind: pass
+  actual-value: (("Foo" . "Bar"))
+  expected-value: (("Foo" . "Bar"))
+Test begin:
+  test-name: "rec->alist on empty cell"
+  source-file: "tests/records.scm"
+  source-line: 20
+  source-form: (test-equal "rec->alist on empty cell" (quote ()) (rec->alist (make <rec>)))
+Test end:
+  result-kind: pass
+  actual-value: ()
+  expected-value: ()
+Test begin:
+  test-name: "Order is preserved"
+  source-file: "tests/records.scm"
+  source-line: 25
+  source-form: (test-equal "Order is preserved" (quote (("Baz" . "Bap") ("Foo" . "Bar"))) (rec->alist (append-to-rec (append-to-rec empty "Baz" "Bap") "Foo" "Bar")))
+Test end:
+  result-kind: pass
+  actual-value: (("Baz" . "Bap") ("Foo" . "Bar"))
+  expected-value: (("Baz" . "Bap") ("Foo" . "Bar"))
+Test begin:
+  test-name: "alist->rec works"
+  source-file: "tests/records.scm"
+  source-line: 30
+  source-form: (test-equal "alist->rec works" alist (rec->alist (alist->rec alist)))
+Test end:
+  result-kind: pass
+  actual-value: (("Foo" . "Bar") ("Bip" . "1234") ("Foo" . "Bott"))
+  expected-value: (("Foo" . "Bar") ("Bip" . "1234") ("Foo" . "Bott"))
+Test begin:
+  test-name: "rec->string"
+  source-file: "tests/records.scm"
+  source-line: 33
+  source-form: (test-equal "rec->string" "Foo: Bar\nBar: 1" (rec->string (alist->rec (quote (("Foo" . "Bar") ("Bar" . 1))))))
+Test end:
+  result-kind: pass
+  actual-value: "Foo: Bar\nBar: 1"
+  expected-value: "Foo: Bar\nBar: 1"
+Test begin:
+  test-name: "string->rec"
+  source-file: "tests/records.scm"
+  source-line: 34
+  source-form: (test-equal "string->rec" (quote (("Quux" . "1") (comment . " hehe") ("Test" . "lol"))) (rec->alist (string->rec "Quux: 1\n# hehe\nTest: lol")))
+Test end:
+  result-kind: pass
+  actual-value: (("Quux" . "1") (comment . " hehe") ("Test" . "lol"))
+  expected-value: (("Quux" . "1") (comment . " hehe") ("Test" . "lol"))
+Test begin:
+  source-file: "tests/records.scm"
+  source-line: 45
+  source-form: (test-equal (quote (("foo" . "asdf") ("bar" . "fghj"))) (rec->alist (record->rec my-rec)))
+Test end:
+  result-kind: pass
+  actual-value: (("foo" . "asdf") ("bar" . "fghj"))
+  expected-value: (("foo" . "asdf") ("bar" . "fghj"))
+Test begin:
+  source-file: "tests/records.scm"
+  source-line: 52
+  source-form: (test-assert (every (lambda (f) (is-a? f <field>)) ptrs))
+Test end:
+  result-kind: pass
+  actual-value: #t
+Test begin:
+  test-name: "rec-fields (1/4)"
+  source-file: "tests/records.scm"
+  source-line: 53
+  source-form: (test-equal "rec-fields (1/4)" "test" (field-name (car ptrs)))
+Test end:
+  result-kind: pass
+  actual-value: "test"
+  expected-value: "test"
+Test begin:
+  test-name: "rec-fields (2/4)"
+  source-file: "tests/records.scm"
+  source-line: 54
+  source-form: (test-equal "rec-fields (2/4)" "heh" (field-value (car ptrs)))
+Test end:
+  result-kind: pass
+  actual-value: "heh"
+  expected-value: "heh"
+Test begin:
+  test-name: "rec-fields (3/4)"
+  source-file: "tests/records.scm"
+  source-line: 55
+  source-form: (test-equal "rec-fields (3/4)" "hahaha" (field-name (cadr ptrs)))
+Test end:
+  result-kind: pass
+  actual-value: "hahaha"
+  expected-value: "hahaha"
+Test begin:
+  test-name: "rec-fields (4/4)"
+  source-file: "tests/records.scm"
+  source-line: 56
+  source-form: (test-equal "rec-fields (4/4)" "quux" (field-value (cadr ptrs)))
+Test end:
+  result-kind: pass
+  actual-value: "quux"
+  expected-value: "quux"
+Test begin:
+  test-name: "append-to-rec rec1 rec2"
+  source-file: "tests/records.scm"
+  source-line: 59
+  source-form: (test-equal "append-to-rec rec1 rec2" (quote (("Foo" . "Bar") ("Beep" . "Boop") ("Lorem" . "Ipsum") ("Dolor" . "Sit amet"))) (let ((rec1 (alist->rec (quote (("Foo" . "Bar") ("Beep" . "Boop"))))) (rec2 (alist->rec (quote (("Lorem" . "Ipsum") ("Dolor" . "Sit amet")))))) (rec->alist (append-to-rec rec1 rec2))))
+Test end:
+  result-kind: pass
+  actual-value: (("Foo" . "Bar") ("Beep" . "Boop") ("Lorem" . "Ipsum") ("Dolor" . "Sit amet"))
+  expected-value: (("Foo" . "Bar") ("Beep" . "Boop") ("Lorem" . "Ipsum") ("Dolor" . "Sit amet"))
+Test begin:
+  test-name: "append-to-rec! rec1 rec2"
+  source-file: "tests/records.scm"
+  source-line: 66
+  source-form: (test-equal "append-to-rec! rec1 rec2" (quote (("Foo" . "Bar") ("Beep" . "Boop") ("Lorem" . "Ipsum") ("Dolor" . "Sit amet"))) (let ((rec1 (alist->rec (quote (("Foo" . "Bar") ("Beep" . "Boop"))))) (rec2 (alist->rec (quote (("Lorem" . "Ipsum") ("Dolor" . "Sit amet")))))) (append-to-rec! rec1 rec2) (rec->alist rec1)))
+Test end:
+  result-kind: pass
+  actual-value: (("Foo" . "Bar") ("Beep" . "Boop") ("Lorem" . "Ipsum") ("Dolor" . "Sit amet"))
+  expected-value: (("Foo" . "Bar") ("Beep" . "Boop") ("Lorem" . "Ipsum") ("Dolor" . "Sit amet"))
+Test begin:
+  test-name: "rec->hash-table"
+  source-file: "tests/records.scm"
+  source-line: 74
+  source-form: (test-equal "rec->hash-table" (quote (("Lol" "Bob") ("Foobar" "Baz" . "Bazbaz"))) (hash-map->list cons (rec->hash-table (let ((rec (make <rec>))) (append-to-rec! rec "Lol" "Bob") (append-to-rec! rec "Foobar" "Baz") (append-to-rec! rec "Foobar" "Bazbaz") rec))))
+Test end:
+  result-kind: pass
+  actual-value: (("Lol" "Bob") ("Foobar" "Baz" . "Bazbaz"))
+  expected-value: (("Lol" "Bob") ("Foobar" "Baz" . "Bazbaz"))
+Test begin:
+  test-name: "hash-table->rec"
+  source-file: "tests/records.scm"
+  source-line: 87
+  source-form: (test-equal "hash-table->rec" alist (rec->alist (hash-table->rec hash)))
+Test end:
+  result-kind: pass
+  actual-value: (("Test" . "Testy test") ("Zest" . "Is best"))
+  expected-value: (("Test" . "Testy test") ("Zest" . "Is best"))
+Test begin:
+  test-name: "comments become instances of <comment>"
+  source-file: "tests/records.scm"
+  source-line: 90
+  source-form: (test-assert "comments become instances of <comment>" (every (lambda (elem) (is-a? elem <comment>)) (elems (alist->rec (quote ((comment . "Foo") (comment . "Bar")))))))
+Test end:
+  result-kind: pass
+  actual-value: #t
+Group end: Records
+# of expected passes      18
