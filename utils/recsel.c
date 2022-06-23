@@ -1,4 +1,4 @@
-/* recsel.c - Selecting records.  */
+/* RECSEL.c - Selecting records.  */
 
 /* Copyright (C) 2010-2020 Jose E. Marchesi */
 
@@ -28,6 +28,10 @@
 #include <rec.h>
 #include <recutl.h>
 
+#if defined REC_GUILE_SUPPORT
+#include <libguile.h>
+#endif
+
 /*
  * Global variables
  */
@@ -46,6 +50,10 @@ rec_fex_t  recutl_sort_by_fields  = NULL;
 rec_fex_t  recsel_group_by_fields = NULL;
 rec_writer_mode_t recsel_write_mode = REC_WRITER_NORMAL;
 char      *recsel_password     = NULL;
+#if defined REC_GUILE_SUPPORT
+char      *guile_load_path     = NULL;
+char      *guile_eval_str      = NULL;
+#endif
 bool       recsel_uniq         = false;
 size_t     recutl_random       = 0;
 char      *recsel_join         = NULL;
@@ -66,6 +74,10 @@ enum
   DESCRIPTOR_ARG,
   PRINT_SEXPS_ARG,
   SORT_ARG,
+#if defined REC_GUILE_SUPPORT
+  GUILE_LOAD_ARG,
+  GUILE_EVAL_ARG,
+#endif
 #if defined REC_CRYPT_SUPPORT
   PASSWORD_ARG,
 #endif
@@ -88,6 +100,10 @@ static const struct option GNU_longOptions[] =
     {"sort", required_argument, NULL, SORT_ARG},
 #if defined REC_CRYPT_SUPPORT
     {"password", required_argument, NULL, PASSWORD_ARG},
+#endif
+#if defined REC_GUILE_SUPPORT
+    {"eval", required_argument, NULL, GUILE_EVAL_ARG},
+    {"load-scheme", required_argument, NULL, GUILE_LOAD_ARG},
 #endif
     {"uniq", no_argument, NULL, UNIQ_ARG},
     {"group-by", required_argument, NULL, GROUP_BY_ARG},
@@ -124,6 +140,12 @@ Select and print rec data.\n"), stdout);
   -U, --uniq                          remove duplicated fields in the output records.\n"),
          stdout);
 
+#if defined REC_GUILE_SUPPORT
+  fputs(_("\
+  -l, --load-scheme=PATH              load Guile scheme files before doing anything.\n"),
+        stdout);
+#endif
+
 #if defined REC_CRYPT_SUPPORT
   /* TRANSLATORS: --help output, encryption related options.
      no-wrap */
@@ -139,6 +161,13 @@ Select and print rec data.\n"), stdout);
   fputs (_("\
   -j, --join=FIELD                    perform an inner join using the specified field.\n"),
          stdout);
+#if defined REC_GUILE_SUPPORT
+  fputs(_("\
+  -E, --eval=EXPR                     evaluate Scheme expression EXPR when doing selection,\n\
+                                      EXPR must return #t or the record is skipped.\n"),
+        stdout);
+#endif
+
 
   puts ("");
   /* TRANSLATORS: --help output, recsel output options.
@@ -177,6 +206,7 @@ recsel_parse_args (int argc,
                              argv,
                              RECORD_SELECTION_SHORT_ARGS
                              ENCRYPTION_SHORT_ARGS
+                             GUILE_SHORT_ARGS
                              "S:Cdcp:P:R:UG:j:",
                              GNU_longOptions,
                              NULL)) != -1)
@@ -184,8 +214,8 @@ recsel_parse_args (int argc,
       c = ret;
       switch (c)
         {
-        COMMON_ARGS_CASES
-        RECORD_SELECTION_ARGS_CASES
+          COMMON_ARGS_CASES
+            RECORD_SELECTION_ARGS_CASES
         case DESCRIPTOR_ARG:
         case 'd':
           recsel_descriptors = true;
@@ -197,6 +227,16 @@ recsel_parse_args (int argc,
         case 'U':
           recsel_uniq = true;
           break;
+#if defined REC_GUILE_SUPPORT
+        case GUILE_EVAL_ARG:
+        case 'E':
+          guile_eval_str = xstrdup (optarg);
+          break;
+        case GUILE_LOAD_ARG:
+        case 'l':
+          guile_load_path = xstrdup (optarg);
+          break;
+#endif
 #if defined REC_CRYPT_SUPPORT
         case PASSWORD_ARG:
         case 's':
@@ -412,6 +452,18 @@ recsel_process_data (rec_db_t db)
   return true;
 }
 
+#if defined REC_GUILE_SUPPORT
+bool
+recsel_load_scheme()
+{
+  scm_init_guile();
+  if (guile_load_path != NULL)
+    {
+      scm_c_primitive_load(guile_load_path);
+    }
+}
+#endif
+
 int
 main (int argc, char *argv[])
 {
@@ -424,6 +476,10 @@ main (int argc, char *argv[])
 
   /* Parse arguments.  */
   recsel_parse_args (argc, argv);
+
+  #if defined REC_GUILE_SUPPORT
+  recsel_load_scheme();
+  #endif
 
   /* Get the input data.  */
   db = recutl_build_db (argc, argv);

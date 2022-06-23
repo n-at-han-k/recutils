@@ -204,6 +204,9 @@ if test "x$guile_enabled" = "xyes"; then
   GUILE_PROGS
   GUILE_FLAGS
 
+  AC_DEFINE([REC_GUILE_SUPPORT],[1],[Add Guile support])
+
+
   AC_PATH_PROG([GUILE_SNARF], [guile-snarf])
   AC_SUBST([GUILE_SNARF])
 

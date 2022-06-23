@@ -81,6 +81,11 @@ if UUID_TYPE
   librec_la_LIBADD += $(UUIDLIBS)
 endif
 
+if BUILD_GUILE
+  AM_CPPFLAGS += $(GUILE_CFLAGS)
+  librec_la_LIBADD += $(GUILE_LDFLAGS)
+endif
+
 check-syntax: all
 
 # End of Makefile.am

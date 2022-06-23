@@ -43,6 +43,12 @@ AM_CPPFLAGS = -I$(top_builddir)/lib \
               -I$(top_srcdir)/libcsv -DLOCALEDIR=\"$(localedir)\" \
               -DMDB_DATETIME=$(MDB_DATETIME)
 
+if BUILD_GUILE
+  AM_CPPFLAGS += $(GUILE_CFLAGS)
+  COMMONLIBS += $(GUILE_LDFLAGS)
+endif
+
+
 recinf_SOURCES = $(COMMONSRC) \
                  recinf.c
 recinf_LDADD = $(COMMONLIBS)
@@ -85,5 +91,13 @@ mdb2rec_SOURCES = $(COMMONSRC) \
                   mdb2rec.c
 mdb2rec_CFLAGS = $(GLIB_CFLAGS)
 mdb2rec_LDADD = $(COMMONLIBS) $(MDBLIBS)
+
+# Flymake support
+
+check-syntax:
+	$(COMPILE) -o /dev/null ${CFLAGS} ${AM_CPPFLAGS} -S ${CHK_SOURCES} || true
+
+.PHONY: check-syntax
+
 
 # End of Makefile.am

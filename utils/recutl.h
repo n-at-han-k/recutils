@@ -145,6 +145,12 @@
 #  define ENCRYPTION_SHORT_ARGS ""
 #endif
 
+#if defined REC_GUILE_SUPPORT
+#  define GUILE_SHORT_ARGS "E:l:"
+#else
+#  define GUILE_SHORT_ARGS ""
+#endif
+
 /*
  * Function prototypes.
  */
