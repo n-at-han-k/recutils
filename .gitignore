@@ -41,6 +41,7 @@ libtool
 /src/config.h.in
 /src/stamp-h1
 /src/rec-sex-lex.c
+/src/rec-sex-lex.h
 /src/rec-sex-tab.c
 /src/rec-sex-tab.h
 /torture/runtests

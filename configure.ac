@@ -46,7 +46,7 @@ AC_ARG_VAR([LEX], [The flex implementation to use.])
 AC_ARG_VAR([LEXLIB], [Options for linking with the flex runtime library.])
 AC_ARG_VAR([LEX_OUTPUT_ROOT], [Base of the file name that the lexer generates.])
 
-gl_BISON
+gl_PROG_BISON([RECUTILS_BISON],[3.6])
 
 dnl System
 AC_CANONICAL_HOST

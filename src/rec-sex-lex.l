@@ -25,13 +25,16 @@
 %option reentrant
 %option bison-bridge
 %option extra-type="void *"
+%option header-file="rec-sex-lex.h"
 
 %option nounput
 %option noinput
 %top {
    /* This code goes at the "top" of the generated file.  */
    #include <config.h>
-   #include "rec-sex-lex.h"
+   #include <rec-sex-ast.h>
+   #include <rec-sex-parser.h>
+   #include "rec-sex-tab.h"
 }
 
 %{

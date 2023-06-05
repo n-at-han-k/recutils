@@ -22,6 +22,7 @@
 
 #include <config.h>
 
+#include <stddef.h> /* For size_t */
 #include <stdbool.h>
 
 enum rec_sex_ast_node_type_e

@@ -1,3 +1,11 @@
+2023-06-05  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* configure.ac: Use gl_PROG_BISON instead of gl_BISON.
+	* src/Makefile.am: Fix bison and flex rules.
+	* src/rec-sex-ast.h: Include stddef.h for size_t.
+	* src/rec-sex-lex.l: Use header-file option and fix includes.
+	* .gitignore: Ignore /src/rec-sex-lex.h.
+
 2022-04-25  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* src/rec-db.c (rec_db_set): Avoid segfault with databases with no
