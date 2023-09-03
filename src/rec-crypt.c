@@ -219,22 +219,25 @@ rec_decrypt (char   *in,
   /* Make sure the decrypted data is ok by checking the CRC at the end
      of the sequence.  */
 
-  if (strlen(*out) > 4)
+  /* If there no padding added in the encryption stage, the data and
+     CRC fills the output buffer. This means that strlen (*out) would
+     fail, because it might buffer over-run.  */
+  size_t outlen = strnlen (*out, *out_size);
+
+  if (outlen > 4)
     {
       uint32_t crc = 0;
-
-      memcpy (&crc, *out + strlen(*out) - 4, 4);
+      memcpy (&crc, *out + outlen - 4, 4);
 #if defined WORDS_BIGENDIAN
       crc = rec_endian_swap (crc);
 #endif
-
-      if (crc32 (*out, strlen(*out) - 4) != crc)
+      if (crc32 (*out, outlen - 4) != crc)
         {
           gcry_cipher_close (handler);
           return false;
         }
 
-      (*out)[strlen(*out) - 4] = '\0';
+      (*out)[outlen - 4] = '\0';
     }
   else
     {

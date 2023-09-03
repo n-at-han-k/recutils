@@ -1,3 +1,10 @@
+2023-09-03  Craig Mason-Jones <craig@lateral.co.za>
+
+	* torture/utils/recsel.sh (recsel-confidential-12): New test.
+	(confidential12): New input file.
+	* src/rec-crypt.c (rec_decrypt): The output buffer may not be
+	null-terminated.
+
 2023-06-05  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* configure.ac: Use gl_PROG_BISON instead of gl_BISON.

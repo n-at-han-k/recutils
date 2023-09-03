@@ -171,6 +171,15 @@ User: foo
 Password: encrypted-MHyd3Dqz+iaViL8h1m18sA==
 '
 
+test_declare_input_file confidential12 \
+'%rec: Login
+%doc: Login to a website or application
+%type: Name line
+%confidential: Password
+
+Name: Test2
+Password: encrypted-YaDdF2AIprCfgUjOPlCWO8/WFq0=
+'
 test_declare_input_file sort \
 '%rec: Sorted
 %sort: Id
@@ -1240,6 +1249,14 @@ test_tool recsel-confidential-num ok \
           confidential \
 'User: foo
 Password: secret
+'
+
+test_tool recsel-confidential-12 ok \
+          recsel \
+          '-s thisismyverysecretpassword' \
+          confidential12 \
+'Name: Test2
+Password: 123456789012
 '
 
 fi # crypt_support
