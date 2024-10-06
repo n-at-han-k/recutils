@@ -89,14 +89,10 @@ AC_ARG_ENABLE([curl],
               [curl_enabled=$enableval], [curl_enabled=yes])
 have_curl=no
 AS_IF([test "x$curl_enabled" = "xyes"], [
-    AC_CHECK_LIB([curl], [curl_global_init], [have_curl=yes], [])
-    AS_IF([test "x$have_curl" = "xyes"], [
-        CURLLIBS=-lcurl
-    ], [
+    PKG_CHECK_MODULES([CURL], [libcurl], [have_curl=yes], [
         AC_MSG_ERROR([curl support enabled but libcurl not found])
     ])
 ], [])
-AC_SUBST([CURLLIBS])
 
 AC_ARG_ENABLE([uuid],
               AS_HELP_STRING([--enable-uuid],
