@@ -74,6 +74,7 @@ dnl Search for functions
 AC_FUNC_FSEEKO
 
 dnl Search for required libraries
+PKG_PROG_PKG_CONFIG
 
 have_check=no
 PKG_CHECK_MODULES([CHECK], [check],
