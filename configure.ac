@@ -139,7 +139,7 @@ AC_ARG_ENABLE([mdb],
               [mdb_enabled=$enableval], [mdb_enabled=yes])
 have_mdb=no
 AS_IF([test "x$mdb_enabled" = "xyes"], [
-    AC_CHECK_LIB([mdb], [mdb_init], [have_mdb=yes], [])
+    AC_CHECK_LIB([mdb], [mdb_init_backends], [have_mdb=yes], [])
     AS_IF([test "x$have_mdb" = "xyes"], [
         MDBLIBS=-lmdb
 

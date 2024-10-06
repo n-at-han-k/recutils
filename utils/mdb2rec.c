@@ -26,7 +26,6 @@
 #include <gettext.h>
 #define _(str) gettext (str)
 
-#include <glib.h>
 #include <mdbtools.h>
 
 #include <rec.h>
@@ -428,8 +427,7 @@ process_mdb (void)
     recutl_out_of_memory ();
 
   /* Initialize libmdb and open the input file.  */
-  mdb_init();
-  mdb_set_date_fmt ("%Y-%m-%dT%H:%M:%S%z"); /* ISO 8601 */
+  mdb_set_date_fmt (mdb, "%Y-%m-%dT%H:%M:%S%z"); /* ISO 8601 */
 
   mdb = mdb_open (mdb2rec_mdb_file, MDB_NOFLAGS);
   if (!mdb)
