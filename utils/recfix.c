@@ -190,6 +190,9 @@ recfix_parse_args (int argc,
           if (recfix_password != NULL)
             recutl_fatal (_("please specify just one password.\n"));
 
+          if (optarg == NULL || optarg[0] == '\0')
+            recutl_fatal (_("password must not be empty.\n"));
+
           recfix_password = xstrdup (optarg);
           break;
 #endif /* REC_CRYPT_SUPPORT */

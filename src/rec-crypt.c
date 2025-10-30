@@ -102,6 +102,13 @@ rec_encrypt (char   *in,
 
   /* Set the key of the cypher.  */
   password_size = strlen (password);
+
+  if (password_size <= 0)
+    {
+      gcry_cipher_close (handler);
+      return false;
+    }
+
   for (i = 0; i < AESV2_KEYSIZE; i++)
     key[i] = password[i % password_size];
 
@@ -177,6 +184,13 @@ rec_decrypt (char   *in,
 
   /* Set the key of the cypher.  */
   password_size = strlen (password);
+
+  if (password_size<=0)
+    {
+      gcry_cipher_close (handler);
+      return false;
+    }
+
   for (i = 0; i < AESV2_KEYSIZE; i++)
     key[i] = password[i % password_size];
 
